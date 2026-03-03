@@ -1,0 +1,19 @@
+﻿services:
+  - type: web
+    name: municipal-backend
+    runtime: python
+    plan: free
+    rootDir: backend
+    buildCommand: bash build.sh
+    startCommand: gunicorn municipal_tax.wsgi:application --log-file -
+    envVars:
+      - key: DJANGO_SETTINGS_MODULE
+        value: municipal_tax.deployment
+      - key: DATABASE_URL
+        sync: false
+      - key: DJANGO_SECRET_KEY
+        generateValue: true
+      - key: FRONTEND_URL
+        sync: false
+      - key: RENDER_EXTERNAL_HOSTNAME
+        sync: false
