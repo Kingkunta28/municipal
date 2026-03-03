@@ -27,8 +27,9 @@ def _to_host(value, default="localhost"):
     return urlparse(origin).netloc
 
 
-RENDER_EXTERNAL_HOSTNAME = os.environ.get("RENDER_EXTERNAL_HOSTNAME", "localhost")
-FRONTEND_URL = os.environ.get("FRONTEND_URL", "https://municipal-frontend-seven.vercel.app")
+# Hardcoded production URLs
+RENDER_EXTERNAL_HOSTNAME = "municipal-backend-3dc6.onrender.com"
+FRONTEND_URL = "https://municipal-orpin.vercel.app"
 FRONTEND_ORIGIN = _to_origin(FRONTEND_URL, default="http://localhost:5173")
 
 ALLOWED_HOSTS = [_to_host(RENDER_EXTERNAL_HOSTNAME)]
