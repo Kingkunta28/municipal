@@ -4,6 +4,7 @@ Serializers for Municipal Tax System API
 from rest_framework import serializers
 from django.contrib.auth import authenticate
 from .models import User, TaxpayerProfile, TaxType, TaxAccount, PaymentRequest
+from .services import ensure_user_tax_account
 
 
 class UserSerializer(serializers.ModelSerializer):
@@ -112,16 +113,11 @@ class TaxpayerProfileCreateSerializer(serializers.ModelSerializer):
         # Create profile
         profile = TaxpayerProfile.objects.create(user=user, **validated_data)
         
-        # Create default tax account.
+        # Ensure every new user has a default tax account.
         # total_tax_due, outstanding_balance, and next_payment_due_date are
         # automatically populated by the post_save signal in signals.py
         # using TaxType.default_amount.
-        tax_type = TaxType.objects.filter(is_active=True).first()
-        if tax_type:
-            TaxAccount.objects.create(
-                user=user,
-                tax_type=tax_type,
-            )
+        ensure_user_tax_account(user)
         
         return profile
 

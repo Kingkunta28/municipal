@@ -19,6 +19,7 @@ from .serializers import (
     UserStatusUpdateSerializer
 )
 from .permissions import IsAdministrator, IsTaxpayer, IsOwnerOrAdministrator, CanAccessAdmin
+from .services import ensure_user_tax_account
 
 
 class TaxAccountViewSet(viewsets.ModelViewSet):
@@ -210,21 +211,7 @@ class PaymentRequestViewSet(viewsets.ModelViewSet):
         tax_account = serializer.validated_data.get('tax_account')
         
         if not tax_account:
-            # Try to get the user's existing tax account
-            try:
-                tax_account = TaxAccount.objects.get(user=request.user)
-            except TaxAccount.DoesNotExist:
-                # Create a new tax account if none exists
-                tax_type = TaxType.objects.first()
-                if not tax_type:
-                    return Response({'error': 'No tax type available. Please contact administrator.'}, status=status.HTTP_400_BAD_REQUEST)
-                tax_account = TaxAccount.objects.create(
-                    user=request.user,
-                    tax_type=tax_type,
-                    total_tax_due=0,
-                    paid_amount=0,
-                    outstanding_balance=0
-                )
+            tax_account = ensure_user_tax_account(request.user)
         else:
             # Verify the tax account belongs to the user
             if tax_account.user != request.user:
@@ -341,10 +328,7 @@ class PaymentRequestViewSet(viewsets.ModelViewSet):
     @action(detail=False, methods=['post'], permission_classes=[IsAuthenticated])
     def generate_control_number(self, request):
         """Generate a unique control number for the user's payment"""
-        try:
-            tax_account = TaxAccount.objects.get(user=request.user)
-        except TaxAccount.DoesNotExist:
-            return Response({'error': 'No tax account found.'}, status=status.HTTP_404_NOT_FOUND)
+        tax_account = ensure_user_tax_account(request.user)
 
         # Cancel any existing pending control-number payments for this user
         PaymentRequest.objects.filter(
@@ -601,24 +585,7 @@ class PayNowView(APIView):
         tax_account = serializer.validated_data.get('tax_account')
         
         if not tax_account:
-            # Try to get the user's existing tax account
-            try:
-                tax_account = TaxAccount.objects.get(user=request.user)
-            except TaxAccount.DoesNotExist:
-                # Create a new tax account if none exists
-                tax_type = TaxType.objects.first()
-                if not tax_type:
-                    return Response(
-                        {'error': 'No tax type available. Please contact administrator.'},
-                        status=status.HTTP_400_BAD_REQUEST
-                    )
-                tax_account = TaxAccount.objects.create(
-                    user=request.user,
-                    tax_type=tax_type,
-                    total_tax_due=0,
-                    paid_amount=0,
-                    outstanding_balance=0
-                )
+            tax_account = ensure_user_tax_account(request.user)
         else:
             # Verify the tax account belongs to the user
             if tax_account.user != request.user:
