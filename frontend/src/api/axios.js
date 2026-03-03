@@ -1,8 +1,34 @@
 import axios from 'axios'
 
-const RAW_API_BASE_URL =
-  import.meta.env.VITE_API_BASE_URL || 'https://municipal-backend-3dc6.onrender.com/api'
-const API_BASE_URL = RAW_API_BASE_URL.replace(/\/$/, '')
+const FALLBACK_API_BASE_URL = 'https://municipal-backend-3dc6.onrender.com/api'
+const RAW_API_BASE_URL = (import.meta.env.VITE_API_BASE_URL || '').trim()
+
+const toApiBaseUrl = (rawValue) => {
+  if (!rawValue) return FALLBACK_API_BASE_URL
+
+  const trimmed = rawValue.replace(/\/$/, '')
+  const looksAbsolute = /^https?:\/\//i.test(trimmed)
+  const withApiPath = /\/api$/i.test(trimmed) ? trimmed : `${trimmed}/api`
+
+  // Guard against misconfiguration where frontend URL is used as API URL.
+  if (
+    looksAbsolute &&
+    typeof window !== 'undefined' &&
+    (() => {
+      try {
+        return new URL(trimmed).origin === window.location.origin
+      } catch {
+        return false
+      }
+    })()
+  ) {
+    return FALLBACK_API_BASE_URL
+  }
+
+  return withApiPath
+}
+
+const API_BASE_URL = toApiBaseUrl(RAW_API_BASE_URL)
 
 const api = axios.create({
   baseURL: API_BASE_URL,
