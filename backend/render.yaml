@@ -16,3 +16,7 @@
         value: https://municipal-orpin.vercel.app
       - key: RENDER_EXTERNAL_HOSTNAME
         value: municipal-backend-3dc6.onrender.com
+      - key: DJANGO_SUPERUSER_EMAIL
+        value: 24bit@suza.ac.tz
+      - key: DJANGO_SUPERUSER_PASSWORD
+        value: admin123

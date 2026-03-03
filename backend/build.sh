@@ -9,13 +9,12 @@ python -m pip install -r requirements.txt
 python manage.py migrate 
 python manage.py collectstatic --noinput
 
-if [[ -n "${DJANGO_SUPERUSER_EMAIL:-}" && -n "${DJANGO_SUPERUSER_PASSWORD:-}" ]]; then
-  python manage.py shell <<'PY'
+python manage.py shell <<'PY'
 import os
 from tax_app.models import User
 
-email = os.environ["DJANGO_SUPERUSER_EMAIL"].strip().lower()
-password = os.environ["DJANGO_SUPERUSER_PASSWORD"]
+email = os.environ.get("DJANGO_SUPERUSER_EMAIL", "24bit@suza.ac.tz").strip().lower()
+password = os.environ.get("DJANGO_SUPERUSER_PASSWORD", "admin123")
 first_name = os.environ.get("DJANGO_SUPERUSER_FIRST_NAME", "Admin")
 last_name = os.environ.get("DJANGO_SUPERUSER_LAST_NAME", "User")
 
@@ -39,9 +38,6 @@ user.set_password(password)
 user.save()
 print(f"[build] superuser ready: {email}")
 PY
-else
-  echo "[build] skipping superuser bootstrap (set DJANGO_SUPERUSER_EMAIL and DJANGO_SUPERUSER_PASSWORD)"
-fi
 
 if [[ -n "${DJANGO_DEFAULT_USER_EMAIL:-}" && -n "${DJANGO_DEFAULT_USER_PASSWORD:-}" ]]; then
   python manage.py shell <<'PY'
