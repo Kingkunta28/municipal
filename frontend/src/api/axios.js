@@ -1,6 +1,7 @@
 import axios from 'axios'
 
-const RAW_API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000/api'
+const RAW_API_BASE_URL =
+  import.meta.env.VITE_API_BASE_URL || 'https://municipal-backend-3dc6.onrender.com/api'
 const API_BASE_URL = RAW_API_BASE_URL.replace(/\/$/, '')
 
 const api = axios.create({
